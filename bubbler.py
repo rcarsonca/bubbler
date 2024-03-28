@@ -113,7 +113,9 @@ def calcsun():
     logging.debug("new sunrise time: %s", today_sr)
     logging.debug("new sunset time: %s", today_ss)
 
-schedule.every().day.at("10:00").do(calcsun)
+
+### schedule to calcualte new sunrise/sunset every night
+schedule.every().day.at("00:30").do(calcsun)
 
 
 #####################################################################################
@@ -158,18 +160,18 @@ client.username_pw_set("ha-user", "ha-pass")
 #broker_address="10.4.24.11"
 broker_address="debian12vm.tail4dd62.ts.net"
 client.connect(broker_address)
-client.subscribe([("cmd/cust1/bubbler_main",1),("cmd/cust1/statemachine",1),("cmd/cust1/auto_bubble",1),("cmd/cust1/bubbler_1",1),("cmd/cust1/bubbler_2",1),("cmd/cust1/danger_lights",1)])
+client.subscribe([("cust1/cmd/bubbler_main",1),("cust1/cmd/statemachine",1),("cust1/cmd/auto_bubble",1),("cust1/cmd/bubbler_1",1),("cust1/cmd/bubbler_2",1),("cust1/cmd/danger_lights",1)])
 client.on_message = on_message
 client.loop_start()
 logging.debug("MQTT subscribe loop started")
 
 # initialize MQTT status variables with broker
-client.publish("state/cust1/bubbler_main","OFF",1,True)
-client.publish("state/cust1/statemachine","OFF",1,True)  #options: OFF, IDLE, NIGHTLY, CONSTANT
-client.publish("state/cust1/auto_bubble","OFF",1,True)
-client.publish("state/cust1/bubbler_1","OFF",1,True)
-client.publish("state/cust1/bubbler_2","OFF",1,True)
-client.publish("state/cust1/danger_lights","OFF",1,True)
+client.publish("cust1/state/bubbler_main","OFF",1,True)
+client.publish("cust1/state/statemachine","OFF",1,True)  #options: OFF, IDLE, NIGHTLY, CONSTANT
+client.publish("cust1/state/auto_bubble","OFF",1,True)
+client.publish("cust1/state/bubbler_1","OFF",1,True)
+client.publish("cust1/state/bubbler_2","OFF",1,True)
+client.publish("cust1/state/danger_lights","OFF",1,True)
 
 ################################################################################
 ###  Functions to turn bubblers and danger ligths on/off
@@ -177,27 +179,27 @@ client.publish("state/cust1/danger_lights","OFF",1,True)
 
 def bubbler_1_off():
     bubbler_1.off()
-    client.publish("state/cust1/bubbler_1","OFF")
+    client.publish("cust1/state/bubbler_1","OFF")
 
 def bubbler_1_on():
     bubbler_1.on()
-    client.publish("state/cust1/bubbler_1","ON")
+    client.publish("cust1/state/bubbler_1","ON")
 
 def bubbler_2_off():
     bubbler_2.off()
-    client.publish("state/cust1/bubbler_2","OFF")
+    client.publish("cust1/state/bubbler_2","OFF")
 
 def bubbler_2_on():
     bubbler_2.on()
-    client.publish("state/cust1/bubbler_2","ON")
+    client.publish("cust1/state/bubbler_2","ON")
 
 def danger_lights_off():
     danger.off()
-    client.publish("state/cust1/danger_lights","OFF")
+    client.publish("cust1/state/danger_lights","OFF")
 
 def danger_lights_on():
     danger.on()
-    client.publish("state/cust1/danger_lights","ON")
+    client.publish("cust1/state/danger_lights","ON")
 
 ######################################################################################
 ###  Routine to run in seperate thread to retrieve & publish temp values once a minute
@@ -217,7 +219,7 @@ def publish_temp():
                 'watertemp': water_temp,
                 'boxtemp': box_temp
         }
-        client.publish("state/cust1/temperatures", payload=json.dumps(send_temp), qos=1)
+        client.publish("cust1/state/temperatures", payload=json.dumps(send_temp), qos=1)
 
 
 #print out temp arry
@@ -273,38 +275,38 @@ while True:
         topic = str(msg.topic)
         payload = str(msg.payload.decode("utf-8"))
 
-        if topic == "cmd/cust1/bubbler_main":
+        if topic == "cust1/cmd/bubbler_main":
             if payload == "ON":
-                client.publish("state/cust1/bubbler_main","ON", qos=1, retain=True)
+                client.publish("cust1/state/bubbler_main","ON", qos=1, retain=True)
                 master = 1
             else:
-                client.publish("state/cust1/bubbler_main","OFF", qos=1, retain=True)
+                client.publish("cust1/state/bubbler_main","OFF", qos=1, retain=True)
                 master = 0
 
-        if topic == "cmd/cust1/auto_bubble":
+        if topic == "cust1/cmd/auto_bubble":
             if payload == "ON":
                 if master == 1:  ### only turn on auto_bubble if master power is on
-                    client.publish("state/cust1/auto_bubble","ON", qos=1, retain=True)
+                    client.publish("cust1/state/auto_bubble","ON", qos=1, retain=True)
                     auto_bubble = 1
             else:
-                client.publish("state/cust1/auto_bubble","OFF", qos=1, retain=True)
+                client.publish("cust1/state/auto_bubble","OFF", qos=1, retain=True)
                 auto_bubble = 0
 
-        if topic == "cmd/cust1/bubbler_1":
+        if topic == "cust1/cmd/bubbler_1":
             if payload == "ON":
                 if master == 1:
                     bubbler_1_on()
             else:
                 bubbler_1_off()
 
-        if topic == "cmd/cust1/bubbler_2":
+        if topic == "cust1/cmd/bubbler_2":
             if payload == "ON":
                 if master == 1:
                     bubbler_2_on()
             else:
                 bubbler_2_off()
 
-        if topic == "cmd/cust1/danger_lights":
+        if topic == "cust1/cmd/danger_lights":
             if payload == "ON":
                 if master == 1:
                     danger_lights_on()
@@ -342,8 +344,8 @@ while True:
         if master == 1:
             state = 1
             logging.debug("entering state 1 from state 0")
-            client.publish("state/cust1/bubbler_main","ON", qos=1, retain=True)
-            client.publish("state/cust1/statemachine","IDLE", qos=1, retain=True)
+            client.publish("cust1/state/bubbler_main","ON", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","IDLE", qos=1, retain=True)
 
 
 ################################################################################
@@ -357,10 +359,10 @@ while True:
         if master == 0:
             state = 0
             logging.debug("entering state 0 from state 1")
-            client.publish("state/cust1/bubbler_main","OFF", qos=1, retain=True)
-            client.publish("state/cust1/statemachine","OFF", qos=1, retain=True)
+            client.publish("cust1/state/bubbler_main","OFF", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","OFF", qos=1, retain=True)
             auto_bubble = 0
-            client.publish("state/cust1/auto_bubble","OFF", qos=1, retain=True)
+            client.publish("cust1/state/auto_bubble","OFF", qos=1, retain=True)
             danger_lights_off()
 
 ### exit: auto_bubble on and air temp below <1 degree C go to state 2, NIGHLTY
@@ -368,7 +370,7 @@ while True:
             if air_temp < 19:
                 state = 2
                 logging.debug("entering state 2 from state 1")
-                client.publish("state/cust1/statemachine","NIGHTLY", qos=1, retain=True)
+                client.publish("cust1/state/statemachine","NIGHTLY", qos=1, retain=True)
                 schedule.every().day.at("03:00").do(bubbler_1_on).tag("nigtly")
                 schedule.every().day.at("04:55").do(bubbler_1_off).tag("nightly")
                 schedule.every().day.at("05:00").do(bubbler_2_on).tag("nightly")
@@ -385,7 +387,7 @@ while True:
         if air_temp < 14:  #18
             state = 3
             logging.debug("entering state 3 from state 2")
-            client.publish("state/cust1/statemachine","CONSTANT", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","CONSTANT", qos=1, retain=True)
             bubbler_1_off()
             bubbler_2_off()
             schedule.clear("nightly")
@@ -398,7 +400,7 @@ while True:
         if auto_bubble == 0:
             state = 1
             logging.debug("entering state 1 from state 2")
-            client.publish("state/cust1/statemachine","IDLE", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","IDLE", qos=1, retain=True)
             bubbler_1_off()
             bubbler_2_off()
             schedule.clear("nightly")
@@ -407,7 +409,7 @@ while True:
         if air_temp > 19.5:
             state = 1
             logging.debug("entering state 1 from state 2")
-            client.publish("state/cust1/statemachine","IDLE", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","IDLE", qos=1, retain=True)
             bubbler_1_off()
             bubbler_2_off()
             schedule.clear("nightly")
@@ -416,10 +418,10 @@ while True:
         if master == 0:
             state = 0
             logging.debug("entering state 0 from state 2")
-            client.publish("state/cust1/bubbler_main","OFF", qos=1, retain=True)
-            client.publish("state/cust1/statemachine","OFF", qos=1, retain=True)
+            client.publish("cust1/state/bubbler_main","OFF", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","OFF", qos=1, retain=True)
             auto_bubble = 0
-            client.publish("state/cust1/auto_bubble","OFF", qos=1, retain=True)
+            client.publish("cust1/state/auto_bubble","OFF", qos=1, retain=True)
             danger_lights_off()
             bubbler_1_off()
             bubbler_2_off()
@@ -435,7 +437,7 @@ while True:
         if air_temp > 18.5:
             state = 2
             logging.debug("entering state 2 from state 3")
-            client.publish("state/cust1/statemachine","NIGHTLY", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","NIGHTLY", qos=1, retain=True)
             bubbler_1_off()
             bubbler_2_off()
             a.stop()
@@ -444,7 +446,7 @@ while True:
         if auto_bubble == 0:
             state = 1
             logging.debug("entering state 1 from state 3")
-            client.publish("state/cust1/statemachine","IDLE", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","IDLE", qos=1, retain=True)
             bubbler_1_off()
             bubbler_2_off()
             a.stop()
@@ -453,10 +455,10 @@ while True:
         if master == 0:
             state = 0
             logging.debug("entering state 0 from state 3")
-            client.publish("state/cust1/bubbler_main","OFF", qos=1, retain=True)
-            client.publish("state/cust1/statemachine","OFF", qos=1, retain=True)
+            client.publish("cust1/state/bubbler_main","OFF", qos=1, retain=True)
+            client.publish("cust1/state/statemachine","OFF", qos=1, retain=True)
             auto_bubble = 0
-            client.publish("state/cust1/auto_bubble","OFF", qos=1, retain=True)
+            client.publish("cust1/state/auto_bubble","OFF", qos=1, retain=True)
             danger_lights_off()
             bubbler_1_off()
             bubbler_2_off()

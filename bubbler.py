@@ -175,6 +175,7 @@ client.publish("cust1/state/danger_lights","OFF",1,True)
 
 ################################################################################
 ###  Functions to turn bubblers and danger ligths on/off
+###   - only allow 1 bubbler to run at a time
 ################################################################################
 
 def bubbler_1_off():
@@ -182,16 +183,18 @@ def bubbler_1_off():
     client.publish("cust1/state/bubbler_1","OFF")
 
 def bubbler_1_on():
-    bubbler_1.on()
-    client.publish("cust1/state/bubbler_1","ON")
+    if bubbler_2.value == 0:
+        bubbler_1.on()
+        client.publish("cust1/state/bubbler_1","ON")
 
 def bubbler_2_off():
     bubbler_2.off()
     client.publish("cust1/state/bubbler_2","OFF")
 
 def bubbler_2_on():
-    bubbler_2.on()
-    client.publish("cust1/state/bubbler_2","ON")
+    if bubbler_1.value == 0:
+        bubbler_2.on()
+        client.publish("cust1/state/bubbler_2","ON")
 
 def danger_lights_off():
     danger.off()

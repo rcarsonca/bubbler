@@ -158,7 +158,7 @@ def on_message(client, userdata, message):
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,"queenMos")
 client.username_pw_set("ha-user", "ha-pass")
 #broker_address="10.4.24.11"
-broker_address="debian12vm.tail4dd62.ts.net"
+broker_address="debian12vm.emerald-gopher.ts.net"
 client.connect(broker_address)
 client.subscribe([("cust1/cmd/bubbler_main",1),("cust1/cmd/statemachine",1),("cust1/cmd/auto_bubble",1),("cust1/cmd/bubbler_1",1),("cust1/cmd/bubbler_2",1),("cust1/cmd/danger_lights",1)])
 client.on_message = on_message

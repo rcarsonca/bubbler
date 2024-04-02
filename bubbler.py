@@ -105,10 +105,11 @@ def calcsun():
     longitude = -79.552073
     tz_muskoka = pytz.timezone('America/Toronto')
     sun = Sun(latitude, longitude)
+    now = datetime.now()
     global today_sr
-    today_sr = sun.get_sunrise_time().astimezone(tz_muskoka).strftime("%H:%M")
+    today_sr = sun.get_sunrise_time(now).astimezone(tz_muskoka).strftime("%H:%M")
     global today_ss
-    today_ss = sun.get_sunset_time().astimezone(tz_muskoka).strftime("%H:%M")
+    today_ss = sun.get_sunset_time(now).astimezone(tz_muskoka).strftime("%H:%M")
     logging.debug("Running calcsun")
     logging.debug("new sunrise time: %s", today_sr)
     logging.debug("new sunset time: %s", today_ss)

@@ -270,6 +270,9 @@ while True:
 
     schedule.run_pending()
 
+#short sleep to avoid high CPU
+    time.sleep(0.1)
+
 
 # check MQTT queue for new cmd messages and act upon them
 
@@ -318,8 +321,6 @@ while True:
             else:
                 danger_lights_off()
 
-
-#    time.sleep(1)
 
 
 ################################################################################

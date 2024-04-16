@@ -176,7 +176,7 @@ client.publish("cust1/state/bubbler_2","OFF",1,True)
 client.publish("cust1/state/danger_lights","OFF",1,True)
 
 ################################################################################
-###  Functions to turn bubblers and danger ligths on/off
+###  Functions to turn bubblers and danger lights on/off
 ###   - only allow 1 bubbler to run at a time
 ################################################################################
 
@@ -217,8 +217,8 @@ def publish_temp():
     while True:
         global air_temp
         air_temp = d.tempC(0)
-        box_temp = 21.2
-        water_temp = 5.5
+        box_temp = d.tempC(1)
+        water_temp = d.tempC(2)
         send_temp = {
                 'airtemp': air_temp,
                 'watertemp': water_temp,
@@ -277,11 +277,13 @@ while True:
 # check MQTT queue for new cmd messages and act upon them
 
     while not q.empty():
+        logging.debug("MQTT message queue not empty")
         msg = q.get()
         if msg is None:
             continue
         topic = str(msg.topic)
         payload = str(msg.payload.decode("utf-8"))
+        logging.debug("new MQTT message decoded")
 
         if topic == "cust1/cmd/bubbler_main":
             if payload == "ON":

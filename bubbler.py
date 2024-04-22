@@ -227,8 +227,8 @@ def publish_temp():
                 'watertemp': water_temp,
                 'boxtemp': box_temp
         }
+        logging.debug(" *** publishing temperature data via MQTT ***")
         client.publish("cust1/state/temperatures", payload=json.dumps(send_temp), qos=1)
-
 
 #print out temp arry
 #        for i in range(d.device_count()):

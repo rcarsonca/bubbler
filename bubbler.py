@@ -156,6 +156,8 @@ calcsun()
 def on_message(client, userdata, message):
     q.put(message)
 
+def on_log(client, userdata, paho_log_level, messages):
+    print("paho log: ",messages)
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,"queenMos")
 client.username_pw_set("ha-user", "ha-pass")
@@ -164,8 +166,9 @@ broker_address="debian12vm.emerald-gopher.ts.net"
 client.connect(broker_address)
 client.subscribe([("cust1/cmd/bubbler_main",1),("cust1/cmd/statemachine",1),("cust1/cmd/auto_bubble",1),("cust1/cmd/bubbler_1",1),("cust1/cmd/bubbler_2",1),("cust1/cmd/danger_lights",1)])
 client.on_message = on_message
+client.enable_logger # enable logging
+client.on_log = on_log
 client.loop_start()
-logging.debug("MQTT subscribe loop started")
 
 # initialize MQTT status variables with broker
 client.publish("cust1/state/bubbler_main","OFF",1,True)
@@ -277,13 +280,13 @@ while True:
 # check MQTT queue for new cmd messages and act upon them
 
     while not q.empty():
-        logging.debug("MQTT message queue not empty")
+#        logging.debug("MQTT message queue not empty")
         msg = q.get()
         if msg is None:
             continue
         topic = str(msg.topic)
         payload = str(msg.payload.decode("utf-8"))
-        logging.debug("new MQTT message decoded")
+#        logging.debug("new MQTT message decoded")
 
         if topic == "cust1/cmd/bubbler_main":
             if payload == "ON":

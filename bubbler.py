@@ -386,6 +386,7 @@ while True:
                 schedule.every().day.at("04:55").do(bubbler_1_off).tag("nightly")
                 schedule.every().day.at("05:00").do(bubbler_2_on).tag("nightly")
                 schedule.every().day.at("06:55").do(bubbler_2_off).tag("nightly")
+                logging.debug("setting nightly schedule, 3am & 5am runs")
 
 
 #################################################################################
@@ -402,6 +403,7 @@ while True:
             bubbler_1_off()
             bubbler_2_off()
             schedule.clear("nightly")
+            logging.debug("clearing nightly schedule")
 
             # start 60 mins alternating timer
             a = Alternator(15)
@@ -415,6 +417,7 @@ while True:
             bubbler_1_off()
             bubbler_2_off()
             schedule.clear("nightly")
+            logging.debug("clearing nightly schedule")
 
 ### exit: if temp goes above 1, go to state 1, IDLE
         if air_temp > 19.5:
@@ -424,6 +427,7 @@ while True:
             bubbler_1_off()
             bubbler_2_off()
             schedule.clear("nightly")
+            logging.debug("clearing nightly schedule")
 
 ### exit: bubbler_main turns off, go to state 0, OFF
         if master == 0:
@@ -437,6 +441,7 @@ while True:
             bubbler_1_off()
             bubbler_2_off()
             schedule.clear("nightly")
+            logging.debug("clearing nightly schedule")
 
 #################################################################################
 ### State: CONSTANT [state = 3]

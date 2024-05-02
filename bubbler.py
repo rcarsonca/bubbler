@@ -376,9 +376,9 @@ while True:
             client.publish("cust1/state/auto_bubble","OFF", qos=1, retain=True)
             danger_lights_off()
 
-### exit: auto_bubble on and air temp below <1 degree C go to state 2, NIGHLTY
+### exit: auto_bubble on and air temp below <0 degree C go to state 2, NIGHLTY
         if auto_bubble == 1:
-            if air_temp < 1:
+            if air_temp < 0:
                 state = 2
                 logging.debug("entering state 2 from state 1")
                 client.publish("cust1/state/statemachine","NIGHTLY", qos=1, retain=True)

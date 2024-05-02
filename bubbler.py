@@ -378,11 +378,11 @@ while True:
 
 ### exit: auto_bubble on and air temp below <1 degree C go to state 2, NIGHLTY
         if auto_bubble == 1:
-            if air_temp < 19:
+            if air_temp < 1:
                 state = 2
                 logging.debug("entering state 2 from state 1")
                 client.publish("cust1/state/statemachine","NIGHTLY", qos=1, retain=True)
-                schedule.every().day.at("03:00").do(bubbler_1_on).tag("nigtly")
+                schedule.every().day.at("03:00").do(bubbler_1_on).tag("nightly")
                 schedule.every().day.at("04:55").do(bubbler_1_off).tag("nightly")
                 schedule.every().day.at("05:00").do(bubbler_2_on).tag("nightly")
                 schedule.every().day.at("06:55").do(bubbler_2_off).tag("nightly")
@@ -395,8 +395,8 @@ while True:
     if state == 2:
 
 
-### exit: temp drops below 16.8, go to state 3, CONSTANT
-        if air_temp < 14:  #18
+### exit: temp drops below -8, go to state 3, CONSTANT
+        if air_temp < -8:
             state = 3
             logging.debug("entering state 3 from state 2")
             client.publish("cust1/state/statemachine","CONSTANT", qos=1, retain=True)
@@ -420,7 +420,7 @@ while True:
             logging.debug("clearing nightly schedule")
 
 ### exit: if temp goes above 1, go to state 1, IDLE
-        if air_temp > 19.5:
+        if air_temp > 1:
             state = 1
             logging.debug("entering state 1 from state 2")
             client.publish("cust1/state/statemachine","IDLE", qos=1, retain=True)
@@ -450,7 +450,7 @@ while True:
 
 
 ### exit: if temp >-6, go to state 2 NIGHTLY
-        if air_temp > 18.5:
+        if air_temp > -6:
             state = 2
             logging.debug("entering state 2 from state 3")
             client.publish("cust1/state/statemachine","NIGHTLY", qos=1, retain=True)

@@ -153,6 +153,10 @@ danger = OutputDevice(dangerPin, active_high=False, initial_value=False)
 calcsun()
 
 # startup MQTT message subscriber
+def on_connect(client, userdata, flags, reason_code, properties):
+    client.subscribe([("cust1/cmd/bubbler_main",1),("cust1/cmd/statemachine",1),("cust1/cmd/auto_bubble",1),("cust1/cmd/bubbler_1",1),("cust1/cmd/bubbler_2",1),("cust1/cmd/danger_lights",1)])
+
+
 def on_message(client, userdata, message):
     q.put(message)
 
@@ -164,7 +168,7 @@ client.username_pw_set("ha-user", "ha-pass")
 #broker_address="10.4.24.11"
 broker_address="debian12vm.emerald-gopher.ts.net"
 client.connect(broker_address)
-client.subscribe([("cust1/cmd/bubbler_main",1),("cust1/cmd/statemachine",1),("cust1/cmd/auto_bubble",1),("cust1/cmd/bubbler_1",1),("cust1/cmd/bubbler_2",1),("cust1/cmd/danger_lights",1)])
+client.on_connect = on_connect
 client.on_message = on_message
 client.enable_logger # enable logging
 #client.on_log = on_log

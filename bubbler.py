@@ -142,7 +142,7 @@ q=Queue()
 # initialize GPIO pins on pi
 bubbler_1 = OutputDevice(bub1Pin, active_high=True, initial_value=False)
 bubbler_2 = OutputDevice(bub2Pin, active_high=True, initial_value=False)
-danger = OutputDevice(dangerPin, active_high=False, initial_value=False)
+danger = OutputDevice(dangerPin, active_high=True, initial_value=False)
 
 # initialize time values for fixed time actions
 # need to fix time.time vs datetime.time conflict

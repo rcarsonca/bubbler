@@ -198,20 +198,20 @@ def bubbler_1_on():
 
 def bubbler_2_off():
     bubbler_2.off()
-    client.publish("cust1/state/bubbler_2","OFF",True)
+    client.publish("cust1/state/bubbler_2","OFF",1,True)
 
 def bubbler_2_on():
     if bubbler_1.value == 0:
         bubbler_2.on()
-        client.publish("cust1/state/bubbler_2","ON",True)
+        client.publish("cust1/state/bubbler_2","ON",1,True)
 
 def danger_lights_off():
     danger.off()
-    client.publish("cust1/state/danger_lights","OFF",True)
+    client.publish("cust1/state/danger_lights","OFF",1,True)
 
 def danger_lights_on():
     danger.on()
-    client.publish("cust1/state/danger_lights","ON",True)
+    client.publish("cust1/state/danger_lights","ON",1,True)
 
 ######################################################################################
 ###  Routine to run in seperate thread to retrieve & publish temp values once a minute

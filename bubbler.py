@@ -187,7 +187,7 @@ client.loop_start()
 ###  load values of persistent GPIO and key variables from savedata.json file
 #################################################################################
 
-with open('savedata.json', 'r') as f:
+with open('/home/randy/bubbler/savedata.json', 'r') as f:
     data = json.load(f)
     master = int(data["mainkey"])
     state = int(data["statekey"])
@@ -266,7 +266,7 @@ def savedata():
 
     jsonData = {"mainkey": master, "statekey": state, "autokey": auto_bubble, "b1key": bubbler_1.value, "b2key": bubbler_2.value, "b3key": bubbler_3.value, "dangerkey": danger.value}
 
-    with open('savedata.json', 'w') as f:
+    with open('/home/randy/bubbler/savedata.json', 'w') as f:
         json.dump(jsonData, f)
 
 
@@ -326,7 +326,7 @@ def publish_temp():
                 'boxtemp': box_temp
         }
         logging.debug(" *** publishing temperature data via MQTT ***")
-        client.publish(f"{cust}/state/temperatures", payload=json.dumps(send_temp), qos=1)
+        client.publish(f"{cust}/state/temperatures", payload=json.dumps(send_temp),1,True)
 
 #print out temp arry
 #        for i in range(d.device_count()):

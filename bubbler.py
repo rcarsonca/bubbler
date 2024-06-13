@@ -49,7 +49,7 @@ class DS18B20(threading.Thread):
     def discover(self):
         device_folder = glob.glob(self._base_dir + "28*")
         self._num_devices = len(device_folder)
-        print(self._num_devices)
+#        print(self._num_devices)
         self._device_file: list[str] = []
         for i in range(self._num_devices):
             self._device_file.append(device_folder[i] + "/w1_slave")
@@ -90,7 +90,10 @@ class DS18B20(threading.Thread):
             logging.debug(f"failed to read device {index}")
 
     def tempC(self, index=0):
-        return self._values[index]
+        try:
+            return self._values[index]
+        except:
+            logging.debug("check temp sensor connections")
 
     def device_count(self):
         """Return the number of discovered devices"""
@@ -147,6 +150,10 @@ dl_flag = 0       # flag for danger lights
 
 # initialize queue for MQTT message arrival
 q=Queue()
+
+# global variable air_temp and initialize
+global air_temp
+air_temp = 10  
 
 # initialize GPIO pins on pi
 bubbler_1 = OutputDevice(bub1Pin, active_high=True, initial_value=False)
@@ -320,7 +327,6 @@ time.sleep(1)
 
 def publish_temp():
     while True:
-        global air_temp
         air_temp = d.tempC(0)
         box_temp = d.tempC(1)
         water_temp = d.tempC(2)
@@ -333,8 +339,8 @@ def publish_temp():
         client.publish(f"{cust}/state/temperatures", payload=json.dumps(send_temp),qos=1,retain=True)
 
 #print out temp arry
-        for i in range(d.device_count()):
-            print(f'dev {i}: {d.tempC(i)}')
+#        for i in range(d.device_count()):
+#            print(f'dev {i}: {d.tempC(i)}')
 
         time.sleep(60)
 

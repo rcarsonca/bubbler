@@ -31,6 +31,9 @@ logging.basicConfig(
 
 ##################################################################################################
 ### create a seperate thread to read the DS18B20 temp sensors
+###
+### from https://stackoverflow.com/questions/72771186/read-multiple-ds18b20-temperature-sensors-faster-using-raspberry-pi
+###
 ##################################################################################################
 
 class DS18B20(threading.Thread):
@@ -46,6 +49,7 @@ class DS18B20(threading.Thread):
     def discover(self):
         device_folder = glob.glob(self._base_dir + "28*")
         self._num_devices = len(device_folder)
+        print(self._num_devices)
         self._device_file: list[str] = []
         for i in range(self._num_devices):
             self._device_file.append(device_folder[i] + "/w1_slave")
@@ -66,7 +70,7 @@ class DS18B20(threading.Thread):
 
             # Adjust this value as you see fit, noting that you will never
             # read actual sensor values more often than 750ms * self._num_devices.
-            time.sleep(1)
+            time.sleep(2)
 
     def _read_temp(self, index):
         for i in range(3):
@@ -329,10 +333,10 @@ def publish_temp():
         client.publish(f"{cust}/state/temperatures", payload=json.dumps(send_temp),qos=1,retain=True)
 
 #print out temp arry
-#        for i in range(d.device_count()):
-#            print(f'dev {i}: {d.tempC(i)}')
+        for i in range(d.device_count()):
+            print(f'dev {i}: {d.tempC(i)}')
 
-        time.sleep(600)
+        time.sleep(60)
 
 t = threading.Thread(target=publish_temp)
 t.start()

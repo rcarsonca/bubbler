@@ -328,8 +328,8 @@ time.sleep(1)
 def publish_temp():
     while True:
         air_temp = d.tempC(0)
-        box_temp = d.tempC(1)
-        water_temp = d.tempC(2)
+        box_temp = d.tempC(2)
+        water_temp = d.tempC(1)
         send_temp = {
                 'airtemp': air_temp,
                 'watertemp': water_temp,
@@ -566,7 +566,7 @@ while True:
         if air_temp > -6:
             state = 2
             logging.debug("entering state 2 from state 3")
-            client.publish(f"{cust}/state/statemachine","NIGHTLY", qos=1, retain=True)
+            client.publish(f"{cust}/state/statemachine","Nightly", qos=1, retain=True)
             bubbler_1_off()
             bubbler_2_off()
             a.stop()
@@ -575,7 +575,7 @@ while True:
         if auto_bubble == 0:
             state = 1
             logging.debug("entering state 1 from state 3")
-            client.publish(f"{cust}/state/statemachine","IDLE", qos=1, retain=True)
+            client.publish(f"{cust}/state/statemachine","Idle", qos=1, retain=True)
             bubbler_1_off()
             bubbler_2_off()
             a.stop()
@@ -585,7 +585,7 @@ while True:
             state = 0
             logging.debug("entering state 0 from state 3")
             client.publish(f"{cust}/state/bubbler_main","OFF", qos=1, retain=True)
-            client.publish(f"{cust}/state/statemachine","OFF", qos=1, retain=True)
+            client.publish(f"{cust}/state/statemachine","Off", qos=1, retain=True)
             auto_bubble = 0
             savedata()
             client.publish(f"{cust}/state/auto_bubble","OFF", qos=1, retain=True)

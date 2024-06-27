@@ -1,4 +1,3 @@
-
 import time
 import json
 from datetime import datetime
@@ -20,8 +19,8 @@ import logging
 #################################################################################################
 
 logging.basicConfig(
-#    level=logging.DEBUG,
-    level=logging.INFO,
+    level=logging.DEBUG,
+#    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler("debug.log"),
@@ -142,10 +141,7 @@ bub3Pin = 22
 dangerPin = 26
 
 # initialize variables
-#state = 0         # statemachine, 0=Off, 1=idle, 2=nightly, 3=constant
 #logging.debug("state initiated = 0")
-#master = 0        # variable for master power
-#auto_bubble = 0   # auto bubbler operation
 dl_flag = 0       # flag for danger lights
 
 # initialize queue for MQTT message arrival
@@ -186,7 +182,11 @@ client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,"queenMos")
 client.username_pw_set("ha-user", "ha-pass")
 #broker_address="10.4.24.11"
 broker_address="debian12vm.emerald-gopher.ts.net"
-client.connect(broker_address)
+# put connection in a try block in case internet not connected
+try:
+    client.connect(broker_address)
+except:
+    logging.debug("cannot connect to MQTT broker")
 client.on_connect = on_connect
 client.on_message = on_message
 client.enable_logger # enable logging
@@ -342,7 +342,7 @@ def publish_temp():
 #        for i in range(d.device_count()):
 #            print(f'dev {i}: {d.tempC(i)}')
 
-        time.sleep(60)
+        time.sleep(10)
 
 t = threading.Thread(target=publish_temp)
 t.start()

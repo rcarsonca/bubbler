@@ -14,6 +14,40 @@ import schedule
 import logging
 
 
+
+
+#####################################################################################
+###  Initialization Routines
+#####################################################################################
+
+# text substitutions
+cust = "cust1"
+#cust = "heller"
+
+# initialize GPIO pins
+bub1Pin = 5
+bub2Pin = 6
+bub3Pin = 22
+dangerPin = 26
+
+# initialize variables
+#logging.debug("state initiated = 0")
+dl_flag = 0       # flag for danger lights
+
+# initialize queue for MQTT message arrival
+q=Queue()
+
+# global variable air_temp and initialize
+global air_temp
+air_temp = 10
+
+# initialize GPIO pins on pi
+bubbler_1 = OutputDevice(bub1Pin, active_high=True, initial_value=False)
+bubbler_2 = OutputDevice(bub2Pin, active_high=True, initial_value=False)
+bubbler_3 = OutputDevice(bub3Pin, active_high=True, initial_value=False)
+danger = OutputDevice(dangerPin, active_high=True, initial_value=False)
+
+
 #################################################################################################
 ### setup logging
 #################################################################################################
@@ -124,38 +158,6 @@ def calcsun():
 
 ### schedule to calcualte new sunrise/sunset every night
 schedule.every().day.at("00:30").do(calcsun)
-
-
-#####################################################################################
-###  Initialization Routines
-#####################################################################################
-
-# text substitutions
-cust = "cust1"
-#cust = "heller"
-
-# initialize GPIO pins
-bub1Pin = 5
-bub2Pin = 6
-bub3Pin = 22
-dangerPin = 26
-
-# initialize variables
-#logging.debug("state initiated = 0")
-dl_flag = 0       # flag for danger lights
-
-# initialize queue for MQTT message arrival
-q=Queue()
-
-# global variable air_temp and initialize
-global air_temp
-air_temp = 10  
-
-# initialize GPIO pins on pi
-bubbler_1 = OutputDevice(bub1Pin, active_high=True, initial_value=False)
-bubbler_2 = OutputDevice(bub2Pin, active_high=True, initial_value=False)
-bubbler_3 = OutputDevice(bub3Pin, active_high=True, initial_value=False)
-danger = OutputDevice(dangerPin, active_high=True, initial_value=False)
 
 
 ######################################################################################
@@ -319,13 +321,14 @@ def danger_lights_on():
     savedata()
 
 ######################################################################################
-###  Routine to run in seperate thread to retrieve & publish temp values once a minute
+###  Routine to run in seperate thread to retrieve & publish temp values every 10 sec
 ######################################################################################
 
 # wait for temp sensor read thread to startup
 time.sleep(1)
 
 def publish_temp():
+    global air_temp
     while True:
         air_temp = d.tempC(0)
         box_temp = d.tempC(2)
@@ -479,7 +482,7 @@ while True:
 ################################################################################
 
     if state == 1:
-
+        logging.debug("in state 1 idle, airtemp: %s", air_temp)
 
 ### exit: bubbler_main turns off, go to state 0, OFF
         if master == 0:

@@ -298,9 +298,9 @@ class Alternator(threading.Thread):
 
     def run(self):
         while not self.event.is_set():
-            bubbler_1_on()
-            time.sleep(3)
             bubbler_2_off()
+            time.sleep(3)
+            bubbler_1_on()
             logging.debug("alternator B1 ON B2 OFF")
             time.sleep(self.delay_mins*60)
             bubbler_1_off()

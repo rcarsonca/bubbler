@@ -414,7 +414,7 @@ while True:
 ################################################################################
 
     if state == 1:
-        logging.debug("in state 1 idle, airtemp: %s", air_temp)
+#        logging.debug("in state 1 idle, airtemp: %s", air_temp)
 
 ### exit: bubbler_main turns off, go to state 0, OFF
         if master == 0:
@@ -453,8 +453,8 @@ while True:
             schedule.clear("nightly")
             logging.debug("clearing nightly schedule")
 
-            # start 60 mins alternating timer
-            a = Alternator(15)
+            # start () mins alternating timer
+            a = Alternator(60)
             a.start()
 
 ### exit: auto_bubble turned off, go to state 1, IDLE

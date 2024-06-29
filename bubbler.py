@@ -54,8 +54,8 @@ danger = OutputDevice(dangerPin, active_high=True, initial_value=False)
 #################################################################################################
 
 logging.basicConfig(
-    level=logging.DEBUG,
-#    level=logging.INFO,
+#    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler("debug.log"),

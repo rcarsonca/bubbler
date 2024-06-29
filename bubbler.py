@@ -183,13 +183,8 @@ def on_message(client, userdata, message):
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,"queenMos")
 client.username_pw_set("ha-user", "ha-pass")
-#broker_address="10.4.24.11"
 broker_address="debian12vm.emerald-gopher.ts.net"
-# put connection in a try block in case internet not connected
-try:
-    client.connect(broker_address)
-except:
-    logging.debug("cannot connect to MQTT broker")
+client.connect_async(broker_address)   #asyn connection in case internet not avail.
 client.on_connect = on_connect
 client.on_message = on_message
 client.enable_logger # enable logging
@@ -207,7 +202,8 @@ with open('/home/randy/bubbler/savedata.json', 'r') as f:
     auto_bubble = int(data["autokey"])
 
 logging.debug("loading from initial load of savedata file")
-
+logging.debug("main power = %s", master)
+logging.debug("auto_bubble = %s", auto_bubble)
 
 
 ################################################################################
@@ -275,6 +271,8 @@ def publish_temp():
         }
 #        logging.debug(" *** publishing temperature data via MQTT ***")
         client.publish(f"{cust}/state/temperatures", payload=json.dumps(send_temp),qos=1,retain=True)
+# publish availability hearbeat
+        client.publish(f"{cust}/state/availability", "online",qos=1,retain=False)
 
 #print out temp arry
 #        for i in range(d.device_count()):

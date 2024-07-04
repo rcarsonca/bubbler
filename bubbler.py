@@ -183,7 +183,7 @@ def on_message(client, userdata, message):
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,"queenMos")
 client.username_pw_set("ha-user", "ha-pass")
-broker_address="debian12vm.emerald-gopher.ts.net"
+broker_address="debianvm-nuc.emerald-gopher.ts.net"
 client.connect_async(broker_address)   #asyn connection in case internet not avail.
 client.on_connect = on_connect
 client.on_message = on_message

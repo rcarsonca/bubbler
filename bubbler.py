@@ -355,25 +355,28 @@ while True:
                 auto_bubble = 0
 
         if topic == f"{cust}/cmd/bubbler_1":
-            if payload == "ON":
-                if master == 1:
-                    bubbler_1_on()
-            else:
-                bubbler_1_off()
+            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
+                if payload == "ON":
+                    if master == 1:
+                        bubbler_1_on()
+                else:
+                    bubbler_1_off()
 
         if topic == f"{cust}/cmd/bubbler_2":
-            if payload == "ON":
-                if master == 1:
-                    bubbler_2_on()
-            else:
-                bubbler_2_off()
+            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
+                if payload == "ON":
+                    if master == 1:
+                        bubbler_2_on()
+                else:
+                    bubbler_2_off()
 
         if topic == f"{cust}/cmd/danger_lights":
-            if payload == "ON":
-                if master == 1:
-                    danger_lights_on()
-            else:
-                danger_lights_off()
+            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
+                if payload == "ON":
+                    if master == 1:
+                        danger_lights_on()
+                else:
+                    danger_lights_off()
 
 
 

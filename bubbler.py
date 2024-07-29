@@ -389,9 +389,10 @@ while True:
 
     if today_now >= today_ss or today_now < today_sr:
         if dl_flag == 0:
-            danger_lights_on()
-            logging.debug("danger lights on at: %s", today_now)
-            dl_flag = 1
+            if master == 1:
+                danger_lights_on()
+                logging.debug("danger lights on at: %s", today_now)
+                dl_flag = 1
     else:
         if dl_flag == 1:
             danger_lights_off()

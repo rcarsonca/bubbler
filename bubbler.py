@@ -15,7 +15,6 @@ import logging
 
 
 
-
 #####################################################################################
 ###  Initialization Routines
 #####################################################################################
@@ -23,6 +22,7 @@ import logging
 # text substitutions
 cust = "cust1"
 #cust = "heller"
+#cust = "miller"
 
 # initialize GPIO pins
 bub1Pin = 5
@@ -38,9 +38,9 @@ dl_flag = 0       # flag for danger lights
 # initialize queue for MQTT message arrival
 q=Queue()
 
-# global variable air_temp and initialize
-global air_temp
-air_temp = 10
+# initialize queue for sharing air temp variable across threads
+tempq=Queue()
+
 
 # initialize GPIO pins on pi
 bubbler_1 = OutputDevice(bub1Pin, active_high=True, initial_value=False)
@@ -179,9 +179,9 @@ def on_message(client, userdata, message):
     q.put(message)
 
 #def on_log(client, userdata, paho_log_level, messages):
-#    print("paho log: ",messages)
+#    print("paho log: ",message)
 
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,"queenMos")
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,"cust1")
 client.username_pw_set("ha-user", "ha-pass")
 broker_address="debianvm-nuc.emerald-gopher.ts.net"
 client.connect_async(broker_address)   #asyn connection in case internet not avail.
@@ -193,7 +193,7 @@ client.loop_start()
 
 
 #################################################################################
-###  load values key variables from persistent savedata.json file
+###  load values of power on/off and autobubble  from persistent savedata.json file
 #################################################################################
 
 with open('/home/randy/bubbler/savedata.json', 'r') as f:
@@ -228,41 +228,48 @@ def savedata():
 def bubbler_1_off():
     bubbler_1.off()
     client.publish(f"{cust}/state/bubbler_1","OFF",1,True)
+    savedata()
 
 def bubbler_1_on():
     if bubbler_2.value == 0:
         bubbler_1.on()
         client.publish(f"{cust}/state/bubbler_1","ON",1,True)
+        savedata()
 
 def bubbler_2_off():
     bubbler_2.off()
     client.publish(f"{cust}/state/bubbler_2","OFF",1,True)
+    savedata()
 
 def bubbler_2_on():
     if bubbler_1.value == 0:
         bubbler_2.on()
         client.publish(f"{cust}/state/bubbler_2","ON",1,True)
+        savedata()
 
 def danger_lights_off():
     danger.off()
     client.publish(f"{cust}/state/danger_lights","OFF",1,True)
+    savedata()
 
 def danger_lights_on():
     danger.on()
     client.publish(f"{cust}/state/danger_lights","ON",1,True)
-
+    savedata()
 ######################################################################################
-###  Routine to run in seperate thread to retrieve & publish temp values every 10 sec
+###  Routine to run in seperate thread to retrieve & publish temp values every 5 sec
 ######################################################################################
 
-# wait for temp sensor read thread to startup
-time.sleep(1)
+# first run, wait for temp sensor read thread to startup
+time.sleep(5)
 
-def publish_temp():
-    global air_temp
+def publish_temp():#
+#    global air_temp
     while True:
-        air_temp = d.tempC(0)
-        box_temp = d.tempC(2)
+        air_temp = d.tempC(2)
+        tempq.put(air_temp)
+        logging.debug("putting air_temp on queue: %s", air_temp)
+        box_temp = d.tempC(0)
         water_temp = d.tempC(1)
         send_temp = {
                 'airtemp': air_temp,
@@ -273,10 +280,6 @@ def publish_temp():
         client.publish(f"{cust}/state/temperatures", payload=json.dumps(send_temp),qos=1,retain=True)
 # publish availability hearbeat
         client.publish(f"{cust}/state/availability", "online",qos=1,retain=False)
-
-#print out temp arry
-#        for i in range(d.device_count()):
-#            print(f'dev {i}: {d.tempC(i)}')
 
         time.sleep(10)
 
@@ -322,6 +325,10 @@ while True:
 #short sleep to avoid high CPU
     time.sleep(0.1)
 
+#check temp queue for updates
+    while not tempq.empty():
+        air_temp_loop = tempq.get()
+        logging.debug("getting air_temp_loop from queue: %s",air_temp_loop)
 
 # check MQTT queue for new cmd messages and act upon them
 
@@ -333,13 +340,14 @@ while True:
         topic = str(msg.topic)
         payload = str(msg.payload.decode("utf-8"))
         logging.debug("new MQTT message decoded")
-        savedata()
+        logging.debug(topic)
+        logging.debug(payload)
         if topic == f"{cust}/cmd/bubbler_main":
             if payload == "ON":
                 client.publish(f"{cust}/state/bubbler_main","ON", qos=1, retain=True)
                 master = 1
             else:
-                client.publish(f"{cust}/state/bubbler_main","OFF", qos=1, retain=True)
+                client.publish(f"{cust}/state/bubbler_main","OFF",1,True)
                 master = 0
                 bubbler_1_off()
                 bubbler_2_off()
@@ -350,6 +358,9 @@ while True:
                 if master == 1:  ### only turn on auto_bubble if master power is on
                     client.publish(f"{cust}/state/auto_bubble","ON", qos=1, retain=True)
                     auto_bubble = 1
+                    bubbler_1_off()
+                    bubbler_2_off()
+                    danger_lights_off()
             else:
                 client.publish(f"{cust}/state/auto_bubble","OFF", qos=1, retain=True)
                 auto_bubble = 0
@@ -379,6 +390,8 @@ while True:
                     danger_lights_off()
 
 
+        savedata()
+
 
 ################################################################################
 ###  Operate Danger Lights from Dusk to Dawn unless state = 0
@@ -403,7 +416,7 @@ while True:
 ### State: OFF  [state = 0]
 ################################################################################
     if state == 0:
-
+#        logging.debug("in state 0 off, airtemp: %s", air_temp_loop)
 ### exit: bubbler_main turns on
         if master == 1:
             state = 1
@@ -416,7 +429,7 @@ while True:
 ################################################################################
 
     if state == 1:
-#        logging.debug("in state 1 idle, airtemp: %s", air_temp)
+#        logging.debug("in state 1 idle, airtemp: %s", air_temp_loop)
 
 ### exit: bubbler_main turns off, go to state 0, OFF
         if master == 0:
@@ -429,7 +442,7 @@ while True:
 
 ### exit: auto_bubble on and air temp below <0 degree C go to state 2, NIGHLTY
         if auto_bubble == 1:
-            if air_temp < 0:
+            if air_temp_loop < 0:
                 state = 2
                 logging.debug("entering state 2 from state 1")
                 client.publish(f"{cust}/state/statemachine","Nightly", qos=1, retain=True)
@@ -446,7 +459,7 @@ while True:
 
 
 ### exit: temp drops below -8, go to state 3, CONSTANT
-        if air_temp < -8:
+        if air_temp_loop < -8:
             state = 3
             logging.debug("entering state 3 from state 2")
             client.publish(f"{cust}/state/statemachine","Constant", qos=1, retain=True)
@@ -470,7 +483,7 @@ while True:
             logging.debug("clearing nightly schedule")
 
 ### exit: if temp goes above 1, go to state 1, IDLE
-        if air_temp > 1:
+        if air_temp_loop > 1:
             state = 1
             logging.debug("entering state 1 from state 2")
             client.publish(f"{cust}/state/statemachine","Idle", qos=1, retain=True)
@@ -497,7 +510,7 @@ while True:
 
 
 ### exit: if temp >-6, go to state 2 NIGHTLY
-        if air_temp > -6:
+        if air_temp_loop > -6:
             state = 2
             logging.debug("entering state 2 from state 3")
             client.publish(f"{cust}/state/statemachine","Nightly", qos=1, retain=True)

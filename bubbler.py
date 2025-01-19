@@ -25,10 +25,10 @@ cust = "cust1"
 #cust = "miller"
 
 # temps (deg C) for state transistions
-TempToNightly = 0
-TempFromNightly = 1
-TempToConstant = -8
-TempFromConstant = -6
+temp_to_nightly = 0
+temp_from_nightly = 1
+temp_to_constant = -8
+temp_from_constant = -6
 
 # initialize GPIO pins
 bub1Pin = 5
@@ -449,7 +449,7 @@ while True:
 
 ### exit: auto_bubble on and air temp below <0 degree C go to state 2, NIGHLTY
         if auto_bubble == 1:
-            if air_temp_loop < TempToNightly:
+            if air_temp_loop < temp_to_nightly:
                 state = 2
                 state2_first_run = 0
                 logging.debug("entering state 2 from state 1")
@@ -460,17 +460,17 @@ while True:
     if state == 2:
 
 ### run this the first time entering nightly state
-      if state2_first_run == 0:
-          client.publish(f"{cust}/state/statemachine","Nightly", qos=1, retain=True)
-          schedule.every().day.at("03:00").do(bubbler_1_on).tag("nightly")
-          schedule.every().day.at("04:55").do(bubbler_1_off).tag("nightly")
-          schedule.every().day.at("05:00").do(bubbler_2_on).tag("nightly")
-          schedule.every().day.at("06:55").do(bubbler_2_off).tag("nightly")
-          logging.debug("setting nightly schedule, 3am & 5am runs")
-          state2_first_run = 1
+        if state2_first_run == 0:
+            client.publish(f"{cust}/state/statemachine","Nightly", qos=1, retain=True)
+            schedule.every().day.at("03:00").do(bubbler_1_on).tag("nightly")
+            schedule.every().day.at("04:55").do(bubbler_1_off).tag("nightly")
+            schedule.every().day.at("05:00").do(bubbler_2_on).tag("nightly")
+            schedule.every().day.at("06:55").do(bubbler_2_off).tag("nightly")
+            logging.debug("setting nightly schedule, 3am & 5am runs")
+            state2_first_run = 1
 
 ### exit: temp drops below -8, go to state 3, CONSTANT
-        if air_temp_loop < TempToConstant:
+        if air_temp_loop < temp_to_constant:
             state = 3
             logging.debug("entering state 3 from state 2")
             client.publish(f"{cust}/state/statemachine","Constant", qos=1, retain=True)
@@ -494,7 +494,7 @@ while True:
             logging.debug("clearing nightly schedule")
 
 ### exit: if temp goes above 1, go to state 1, IDLE
-        if air_temp_loop > TempFromNighly:
+        if air_temp_loop > temp_from_nighly:
             state = 1
             logging.debug("entering state 1 from state 2")
             client.publish(f"{cust}/state/statemachine","Idle", qos=1, retain=True)
@@ -521,7 +521,7 @@ while True:
 
 
 ### exit: if temp >-6, go to state 2 NIGHTLY
-        if air_temp_loop > TempFromConstant:
+        if air_temp_loop > temp_from_constant:
             state = 2
             state2_first_run = 0
             logging.debug("entering state 2 from state 3")

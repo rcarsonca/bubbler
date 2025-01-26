@@ -526,18 +526,18 @@ while True:
             state2_first_run = 0
             logging.debug("entering state 2 from state 3")
             client.publish(f"{cust}/state/statemachine","Nightly", qos=1, retain=True)
+            a.stop()
             bubbler_1_off()
             bubbler_2_off()
-            a.stop()
 
 ### exit: auto_bubble turned off, go to state 1, IDLE
         if auto_bubble == 0:
             state = 1
             logging.debug("entering state 1 from state 3")
             client.publish(f"{cust}/state/statemachine","Idle", qos=1, retain=True)
+            a.stop()
             bubbler_1_off()
             bubbler_2_off()
-            a.stop()
 
 ### exit: bubbler_main turns off, go to state 0, OFF
         if master == 0:
@@ -547,9 +547,9 @@ while True:
             client.publish(f"{cust}/state/statemachine","Off", qos=1, retain=True)
             auto_bubble = 0
             client.publish(f"{cust}/state/auto_bubble","OFF", qos=1, retain=True)
+            a.stop
             bubbler_1_off()
             bubbler_2_off()
-            a.stop()
 
 ##################################################################################
 ##################################################################################

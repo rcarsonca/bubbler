@@ -299,26 +299,43 @@ t.start()
 
 class Alternator(threading.Thread):
     def __init__(self,timeout):
+        super().__init__()  # Initializes the thread properly
         self.delay_mins = timeout
-#        self.functions = [cycle_1, cycle_2]
         threading.Thread.__init__(self)
         self.event = threading.Event()
 
     def run(self):
         while not self.event.is_set():
             bubbler_2_off()
-            time.sleep(3)
+            self._safe_sleep(3)
+
             bubbler_1_on()
             logging.debug("alternator B1 ON B2 OFF")
-            time.sleep(self.delay_mins*60)
+            self._safe_sleep(self.delay_mins*60)
+
             bubbler_1_off()
-            time.sleep(3)
+            self._safe_sleep(3)
+
             bubbler_2_on()
             logging.debug("alternator B1 OFF B2 ON")
-            time.sleep(self.delay_mins*60)
+            self._safe_sleep(self.delay_mins*60)
+
+    def _safe_sleep(self, duration):
+        """Sleep in small intervals to allow early exit when stop() is called."""
+        interval = 0.5  # check every 0.5 seconds
+        elapsed = 0
+        while elapsed < duration:
+            if self.event.is_set():
+                return # exit early if stop() is called
+            time.sleep(min(interval, duration - elapsed))
+            elapsed += interval
 
     def stop(self):
+        """Signal the thread to stop and wait for it to finish"""
         self.event.set()
+        self.join(timeout=5)  # Wait up to 5 seconds for the thread to stop
+        if self.is_alive():
+            logging.warning("Alternator thread did not stop in time!")
 
 #################################################################################
 ### Main Loop

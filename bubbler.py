@@ -61,8 +61,8 @@ danger = OutputDevice(dangerPin, active_high=True, initial_value=False)
 #################################################################################################
 
 logging.basicConfig(
-#    level=logging.DEBUG,
-    level=logging.INFO,
+    level=logging.DEBUG,
+#    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler("debug.log"),
@@ -275,7 +275,7 @@ def publish_temp():#
     while True:
         air_temp = d.tempC(2)
         tempq.put(air_temp)
-        logging.debug("putting air_temp on queue: %s", air_temp)
+#        logging.debug("putting air_temp on queue: %s", air_temp)
         box_temp = d.tempC(0)
         water_temp = d.tempC(1)
         send_temp = {
@@ -352,7 +352,7 @@ while True:
 #check temp queue for updates
     while not tempq.empty():
         air_temp_loop = tempq.get()
-        logging.debug("getting air_temp_loop from queue: %s",air_temp_loop)
+#        logging.debug("getting air_temp_loop from queue: %s",air_temp_loop)
 
 # check MQTT queue for new cmd messages and act upon them
 
@@ -390,7 +390,7 @@ while True:
                 auto_bubble = 0
 
         if topic == f"{cust}/cmd/bubbler_1":
-            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
+#            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
                 if payload == "ON":
                     if master == 1:
                         bubbler_1_on()
@@ -398,7 +398,7 @@ while True:
                     bubbler_1_off()
 
         if topic == f"{cust}/cmd/bubbler_2":
-            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
+#            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
                 if payload == "ON":
                     if master == 1:
                         bubbler_2_on()
@@ -406,7 +406,7 @@ while True:
                     bubbler_2_off()
 
         if topic == f"{cust}/cmd/danger_lights":
-            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
+#            if auto_bubble == 0:  ### only turn on/off if auto bubble not enabled
                 if payload == "ON":
                     if master == 1:
                         danger_lights_on()
